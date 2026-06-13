@@ -7,7 +7,9 @@
 /* Низкоуровневый слой — в storage.js (window.MedStore). get/set синхронные,
    но старый код вызывает их через await — это совместимо. */
 const store = window.MedStore;
-const APP_VERSION = '1.1 от 13.06.2026';
+const APP_VERSION = '1.2 от 13.06.2026';
+/* маленький футер с номером версии — показывается внизу на всех экранах */
+function verLine(){ return `<div class="note" style="text-align:center;opacity:.5;font-size:11px;margin-top:16px;letter-spacing:.02em">${t('ver_lbl')} ${APP_VERSION}</div>` }
 
 /* Новые строки интерфейса (синхронизация, ИИ-ключ, пароль) — дополняем L,
    чтобы они проходили через те же t()/tf() с фолбэком на русский. */
@@ -356,7 +358,7 @@ async function renderHome(force){ const el=document.getElementById('scr-home'); 
   <span class="st now" style="margin-inline-start:auto">!</span></button>`:'';
  el.innerHTML=`${nextHtml}${banner}<h2>${tf('today_is',{d:DF()[day]})}</h2>${rows}
  <button class="bigbtn" onclick="show('collect')">${t('btn_collect')}</button>
- <div class="note">${t('home_note')}</div>` }
+ <div class="note">${t('home_note')}</div>${verLine()}` }
 
 /* ============ ORDER INFOGRAPHIC ============ */
 function orderInfographic(){
@@ -381,7 +383,7 @@ function renderCollect(){ const el=document.getElementById('scr-collect');
  el.innerHTML=`<h2>📦 ${t('box_title')}</h2>
  <div class="card"><div class="bxgrid" style="grid-template-columns:54px repeat(${DAYORDER.length},1fr)">${cells}</div></div>
  <div class="note">${t('box_legend')}</div>
- ${orderInfographic()}` }
+ ${orderInfographic()}${verLine()}` }
 
 /* ============ WIZARD ============ */
 let steps=[],stepIdx=0,wizDay=0;
@@ -644,7 +646,7 @@ function renderSettings(){ if(!setAuthed){renderSettingsGate();return} const el=
   <button class="dbtn" style="padding:11px 13px;border-radius:11px;font-size:14px" onclick="resetAll()">${t('reset')}</button>
  </div>
  <div class="note">${t('set_note')}</div>
- <div class="note" style="text-align:center;margin-top:10px">${t('ver_lbl')} ${APP_VERSION}</div>` }
+ ${verLine()}` }
 async function saveCaregiver(v){ state.caregiver=(v||'').trim()||'Джамшид'; await saveState() }
 async function saveTg(){ const tk=(document.getElementById('tgtok')||{}).value||''; const ch=(document.getElementById('tgchat')||{}).value||'';
  state.tgToken=tk.trim(); state.tgChat=ch.trim(); await saveState();
