@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Лекарства">
+<meta name="theme-color" content="#1C2630">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>Лекарства — помощник</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+Hebrew:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+  <div>
+    <div class="t" id="appTitle">ЛЕКАРСТВА · ПОМОЩНИК</div>
+    <div class="p">ГРИГОРИЙ РАЗУМОВСКИЙ</div>
+  </div>
+  <div class="hclock"><div id="clock">--:--</div><div id="hdate"></div></div>
+  <button id="fsBtn" onclick="toggleFS()" aria-label="fullscreen"></button>
+  <button id="refreshBtn" onclick="forceRefresh()" aria-label="refresh">🔄</button>
+  <button id="langBtn" onclick="pickLang()">🌐 RU</button>
+  <button id="soundBtn" onclick="toggleSound()">🔕</button>
+</header>
+
+<nav>
+  <button id="nb-home" class="on" onclick="show('home')">ГЛАВНАЯ</button>
+  <button id="nb-collect" onclick="show('collect')">СОБРАТЬ</button>
+  <button id="nb-settings" onclick="show('settings')">НАСТРОЙКИ</button>
+</nav>
+
+<div class="wrap" id="scr-home"></div>
+<div class="wrap" id="scr-collect" hidden></div>
+<div class="wrap" id="scr-settings" hidden></div>
+
+<div id="wiz">
+  <div class="wtop"><div><div class="wt" id="wtitle"></div><div class="wp" id="wprog"></div></div><button id="wexit" onclick="closeWiz()">✕</button></div>
+  <div class="pbar"><i id="wfill" style="width:0%"></i></div>
+  <div class="wbody" id="wbody"></div>
+  <div class="wnav" id="wnav"></div>
+</div>
+
+<div id="modal"><div class="mbox" id="mbox"></div></div>
+
+<div id="alert"><div class="abox">
+  <div class="bell" id="abell"></div>
+  <div class="atime" id="atime">08:00</div>
+  <div class="ainfo" id="ainfo"></div>
+  <div class="alist" id="alist"></div>
+  <button class="bigbtn green" id="abtn1" onclick="alertCollect()"></button>
+  <button class="bigbtn gray" id="abtn2" onclick="alertSnooze()"></button>
+  <button class="bigbtn" id="abtn3" style="background:#fff;color:var(--muted);border:2px solid var(--line)" onclick="closeAlert(true)"></button>
+</div></div>
+
+<div id="ralert" style="position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;background:rgba(15,30,40,.78)">
+<div class="abox refill">
+  <div class="bell" id="rbell" style="color:#7C3AED"></div>
+  <div class="rday" id="rday"></div>
+  <div class="ainfo" id="rinfo"></div>
+  <div id="rstrip"></div>
+  <button class="bigbtn" id="rbtn1" style="background:#7C3AED" onclick="refillStart()"></button>
+  <button class="bigbtn gray" id="rbtn2" onclick="closeRAlert()"></button>
+</div></div>
+
+<input type="file" id="fileMedPhoto" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="filePack" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="fileRx" accept="image/*" capture="environment" style="display:none">
+
+<div id="livebadge"></div>
+<div id="toast"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
