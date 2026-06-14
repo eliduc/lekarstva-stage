@@ -31,7 +31,7 @@ function defaultState(){return JSON.parse(JSON.stringify({
  times:["08:00","14:00","20:00"],
  /* Назначение Григория Разумовского, действует с 15 июня 2026 (по приложенным PDF) */
  meds:{
-  esomeprazole:{name:"ESOMEPRAZOLE INOVAMED",ru:"ЭЗОМЕПРАЗОЛ ИНОВАМЕД",type:"tab",qty:"1 таблетка",sub:"Esomeprazole 40 мг · защита желудка",warn:"⚠ Внимание! Натощак, за 30–60 мин до завтрака — принять первым",warnLevel:"amber",img:"esomeprazole"},
+  esomeprazole:{name:"ESOMEPRAZOLE INOVAMED",ru:"ЭЗОМЕПРАЗОЛ ИНОВАМЕД",type:"tab",qty:"1 таблетка",sub:"Esomeprazole 40 мг · защита желудка",warn:"Внимание! Натощак, за 30–60 мин до завтрака — принять первым.",warnLevel:"red",warnBig:true,img:"esomeprazole"},
   fusid:{name:"FUSID",ru:"ФУСИД",type:"tab",qty:"1 таблетка",sub:"Furosemide 40 мг · мочегонное",img:"fusid"},
   forxiga:{name:"FORXIGA",ru:"ФОРКСИГА",type:"tab",qty:"1 таблетка",sub:"Dapagliflozin 10 мг · для сердца / сахар",img:"forxiga"},
   amiodacore:{name:"AMIODACORE",ru:"АМИОДАКОР",type:"tab",qty:"1 таблетка",sub:"Amiodarone 200 мг · от аритмии · = AMIOCARD / PROCOR",warn:"Принимать 5 дней в неделю — НЕ давать по ВТОРНИКАМ и ПЯТНИЦАМ",warnLevel:"amber",excludeDays:[2,5],img:"amiodacore"},

@@ -8,7 +8,7 @@
    но старый код вызывает их через await — это совместимо. */
 const store = window.MedStore;
 const STAGE = !!(window.MedStore && window.MedStore.isStage); // stage-версия (отдельные данные, Telegram выключен)
-const APP_VERSION = '1.5 от 14.06.2026';
+const APP_VERSION = '1.6 от 14.06.2026';
 /* маленький футер с номером версии — показывается внизу на всех экранах */
 function verLine(){ return `<div class="note" style="text-align:center;opacity:.5;font-size:11px;margin-top:16px;letter-spacing:.02em">${t('ver_lbl')} ${APP_VERSION}</div>` }
 
@@ -499,7 +499,7 @@ function renderStep(){ const s=steps[stepIdx]; if(!s){closeWiz();return}
     <div class="sb">${esc(medSub(m))}</div>
     <div class="ph">${ph}</div>
     <div><span class="qy" style="color:${d.c};border-color:${d.c}">${esc(locQty(m.qty))}</span></div>
-    ${medWarn(m)?`<div class="wflag ${m.warnLevel||'info'}">${esc(medWarn(m))}</div>`:''}</div>`;
+    ${medWarn(m)?`<div class="wflag ${m.warnLevel||'info'}${m.warnBig?' gbig':''}">${esc(medWarn(m))}</div>`:''}</div>`;
    nav.innerHTML=`${backBtn}<button class="done" onclick="stepIdx++;renderStep()">${refillCtx?t('placed_btn'):t('done_btn')}</button>`;
   }
  } else if(s.k==='rintro'){
@@ -532,7 +532,7 @@ function renderStep(){ const s=steps[stepIdx]; if(!s){closeWiz();return}
     ${im?`<img src="${im}">`:`<span class="gic" style="background:${d.bg};color:${d.c}">${icon(m.type,30)}</span>`}
     <div style="flex:1;min-width:0"><div class="gn">${esc(m.name)}${medRu(m)?` <span class="gnru">${esc(medRu(m))}</span>`:''}</div>
      <div class="gs">${skip?t('skip_chip'):esc(medSub(m))}</div>
-     ${(!skip&&warn)?`<div class="wflag ${m.warnLevel||'info'} gwarn">${esc(warn)}</div>`:''}</div>
+     ${(!skip&&warn)?`<div class="wflag ${m.warnLevel||'info'} ${m.warnBig?'gbig':'gwarn'}">${esc(warn)}</div>`:''}</div>
     <span class="gq" style="${skip?'color:#B42222;border-color:#B42222':`color:${d.c};border-color:${d.c}`}">${skip?t('alert_skip'):esc(locQty(m.qty))}</span></div>` }
   const gsteps=steps.filter(x=>x.k==='group'&&x.time===s.time);
   const stepper=gsteps.map((g,i)=>{ const ty=[...new Set(g.meds.map(m=>m.type))].sort((a,b)=>(ORDER[a]??9)-(ORDER[b]??9))[0]; const dd=TYPES[ty];

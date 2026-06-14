@@ -89,6 +89,8 @@ h2{font-weight:900;font-size:20px;margin:18px 0 10px}
 .grow .gq{margin-inline-start:auto;font-weight:900;font-size:17px;border:3px solid;border-radius:11px;padding:9px 13px;white-space:nowrap;flex:0 0 auto}
 .grow.skip .gn{color:#B42222;text-decoration:line-through}
 .gwarn{display:inline-block;margin-top:5px;padding:5px 8px;font-size:12.5px}
+/* крупное красное предупреждение (напр. ESOMEPRAZOLE — натощак, первым) */
+.gbig{display:block;margin-top:8px;padding:12px 14px;font-size:18px;font-weight:900;line-height:1.32;border:2px solid currentColor}
 .stepper{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:10px}
 .stp{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;border:2.5px solid var(--line);background:#fff;color:#9aa6ae;font-weight:900;font-size:20px}
 .sarr{color:#B9C3C9}
