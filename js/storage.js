@@ -18,17 +18,26 @@
 window.MedStore = (function () {
   var mem = {}; // запасное хранилище, если localStorage недоступен (приватный режим)
 
+  // STAGING: у всех project-pages eliduc.github.io ОДИН origin → localStorage общий.
+  // Поэтому stage-версия использует свой префикс ключей, чтобы НЕ пересекаться с prod
+  // (отдельный токен/данные/настройки/Telegram). Среда определяется по URL.
+  var STAGE = (function () {
+    try { return /lekarstva-stage/.test(location.pathname) || /[?&]env=stage/.test(location.search); }
+    catch (e) { return false; }
+  })();
+  var PREFIX = STAGE ? 'stage:' : '';
+
   function get(k) {
-    try { return localStorage.getItem(k); }
-    catch (e) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; }
+    try { return localStorage.getItem(PREFIX + k); }
+    catch (e) { return Object.prototype.hasOwnProperty.call(mem, PREFIX + k) ? mem[PREFIX + k] : null; }
   }
   function set(k, v) {
-    try { localStorage.setItem(k, v); }
-    catch (e) { mem[k] = v; }
+    try { localStorage.setItem(PREFIX + k, v); }
+    catch (e) { mem[PREFIX + k] = v; }
   }
   function remove(k) {
-    try { localStorage.removeItem(k); }
-    catch (e) { delete mem[k]; }
+    try { localStorage.removeItem(PREFIX + k); }
+    catch (e) { delete mem[PREFIX + k]; }
   }
 
   // ---------- служебные мета-поля (единый JSON medapp:meta) ----------
@@ -45,6 +54,7 @@ window.MedStore = (function () {
 
   return {
     get: get, set: set, remove: remove,
-    getMeta: getMeta, setMeta: setMeta
+    getMeta: getMeta, setMeta: setMeta,
+    isStage: STAGE
   };
 })();

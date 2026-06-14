@@ -179,3 +179,6 @@ input[type=text],select,textarea{font-family:inherit;font-size:15px;border:2px s
 [dir=rtl] #livebadge{direction:rtl}
 #toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%) translateY(20px);z-index:130;max-width:90%;background:var(--ink);color:#fff;font-weight:800;font-size:15px;padding:12px 18px;border-radius:14px;box-shadow:0 10px 30px rgba(20,40,55,.25);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* stage-версия: отличаем визуально (оранжевая шапка), чтобы не путать с боевой */
+body.stage header{background:#9a3412}
+body.stage nav button.on{color:#9a3412;border-top-color:#9a3412}

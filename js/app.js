@@ -7,7 +7,8 @@
 /* Низкоуровневый слой — в storage.js (window.MedStore). get/set синхронные,
    но старый код вызывает их через await — это совместимо. */
 const store = window.MedStore;
-const APP_VERSION = '1.3 от 13.06.2026';
+const STAGE = !!(window.MedStore && window.MedStore.isStage); // stage-версия (отдельные данные, Telegram выключен)
+const APP_VERSION = '1.4 от 13.06.2026';
 /* маленький футер с номером версии — показывается внизу на всех экранах */
 function verLine(){ return `<div class="note" style="text-align:center;opacity:.5;font-size:11px;margin-top:16px;letter-spacing:.02em">${t('ver_lbl')} ${APP_VERSION}</div>` }
 
@@ -140,9 +141,16 @@ Object.assign(L.uz,{
  ev_med_added:"Dori qoʻshildi: {med}",ev_med_edited:"Dori oʻzgartirildi: {med}",ev_med_removed:"Dori oʻchirildi: {med}",
  ev_time_added:"Vaqt qoʻshildi: {time}",ev_time_changed:"Vaqt oʻzgartirildi: {old} → {time}",ev_time_removed:"Vaqt oʻchirildi: {time}",
  ev_sched_add:"{time} ga qoʻshildi: {med}",ev_sched_remove:"{time} dan olib tashlandi: {med}"});
+/* stage-версия */
+L.ru.stage_tg_off="Тестовая (stage) версия — Telegram отключён, чтобы не слать в боевой канал.";
+L.en.stage_tg_off="Test (stage) version — Telegram is disabled so it can't post to the live channel.";
+L.he.stage_tg_off="גרסת בדיקה (stage) — Telegram מושבת כדי לא לשלוח לערוץ הפעיל.";
+L.uz.stage_tg_off="Sinov (stage) versiyasi — Telegram oʻchirilgan, jonli kanalga yubormaydi.";
 
 /* ============ TELEGRAM ============ */
-function tgConfigured(){ return !!(state&&state.tgToken&&state.tgChat) }
+/* В stage Telegram ВСЕГДА выключен — даже если в настройки попал боевой токен.
+   Это гарантирует, что stage не шлёт в боевой канал (никакой гонки за канал). */
+function tgConfigured(){ return !STAGE && !!(state&&state.tgToken&&state.tgChat) }
 async function tgSend(text){ if(!tgConfigured())return {ok:false,reason:'off'};
  try{
   const r=await fetch('https://api.telegram.org/bot'+encodeURIComponent(state.tgToken)+'/sendMessage',{
@@ -262,7 +270,8 @@ async function setLang(l){ lang=l; await store.set('medapp:lang',l);
  applyChrome(); const cur=['home','collect','settings'].find(s=>!document.getElementById('scr-'+s).hidden)||'home';
  if(cur==='home')renderHome(); if(cur==='collect')renderCollect(); if(cur==='settings')renderSettings(); }
 function applyChrome(){
- document.getElementById('appTitle').textContent=t('app_title');
+ document.getElementById('appTitle').textContent=(STAGE?'🧪 STAGE · ':'')+t('app_title');
+ document.body.classList.toggle('stage',STAGE);
  document.getElementById('nb-home').textContent='🏠 '+t('nav_home');
  document.getElementById('nb-collect').textContent='📦 '+t('nav_collect');
  document.getElementById('nb-settings').textContent='⚙️ '+t('nav_settings');
@@ -660,6 +669,7 @@ function renderSettings(){ if(!setAuthed){renderSettingsGate();return} const el=
  <div class="card set">${timesHtml}<button class="addln" onclick="addTime()">${t('add_time')}</button></div>
  <h2>✈ ${t('set_tg')}</h2>
  <div class="card">
+  ${STAGE?`<div class="wflag amber" style="margin-top:0;margin-bottom:8px">🧪 ${t('stage_tg_off')}</div>`:''}
   <div class="fld" style="margin-top:0"><label>${t('tg_token')}</label><input type="text" id="tgtok" value="${esc(state.tgToken||'')}" placeholder="123456:ABC..." autocomplete="off" onchange="saveTg()"></div>
   <div class="fld"><label>${t('tg_chat')}</label><input type="text" id="tgchat" value="${esc(state.tgChat||'')}" placeholder="напр. 123456789" inputmode="numeric" autocomplete="off" onchange="saveTg()"></div>
   <button class="sb1" style="border-radius:11px;padding:12px 13px;font-weight:800;font-size:14px;margin-top:10px" onclick="testTg()">${t('tg_test')}</button>
