@@ -8,7 +8,7 @@
    но старый код вызывает их через await — это совместимо. */
 const store = window.MedStore;
 const STAGE = !!(window.MedStore && window.MedStore.isStage); // stage-версия (отдельные данные, Telegram выключен)
-const APP_VERSION = '1.8 от 15.06.2026';
+const APP_VERSION = '1.9 от 15.06.2026';
 /* маленький футер с номером версии — показывается внизу на всех экранах */
 function verLine(){ return `<div class="note" style="text-align:center;opacity:.5;font-size:11px;margin-top:16px;letter-spacing:.02em">${t('ver_lbl')} ${APP_VERSION}</div>` }
 
@@ -350,20 +350,11 @@ async function checkReminders(){ if(!state)return; const n=new Date(); const iso
   const diff=n.getTime()-tt.getTime();
   if(diff>=0&&diff<10*60*1000){ firedAlerts[key]=true; openAlert(time,day); break }
  }
- // evening summary (once per day at/after configured time)
- if(tgConfigured()&&state.tgSummary&&/^\d{2}:\d{2}$/.test(state.tgSummary)){
-  const skey=iso; if(firedSummary!==skey){ const hm=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-   if(hm>=state.tgSummary){ firedSummary=skey; notifySummary(iso, day) } } }
- // missed-dose Telegram alert (once per time per day), after grace minutes
- if(tgConfigured()){ const graceMs=(state.tgMissedMin||30)*60*1000;
-  const sent=await tgMissedGet(iso);
-  for(const time of state.times){ if(done.includes(time))continue;
-   const mkey=iso+'|'+time; if(firedMissed[mkey]||sent[time])continue;
-   const [H,M]=time.split(':').map(Number); const tt=new Date(n); tt.setHours(H,M,0,0);
-   if(n.getTime()-tt.getTime()>=graceMs){
-    const recheck=await freshDone(iso); if(recheck.includes(time))continue;
-    firedMissed[mkey]=true; await tgMissedMark(iso,time); notifyMissed(time); } }
- }
+ /* «Пропущено» и вечернюю сводку в Telegram теперь шлёт СЕРВЕР (GitHub Actions в
+    репозитории lekarstva-data, по общему облачному статусу) — надёжно и одинаково
+    для всех устройств, независимо от того, открыто ли приложение. Здесь больше НЕ
+    дублируем (иначе пользователь получал бы двойные сообщения). Мгновенное «Выдано»
+    при отметке (notifyGiven) и экранный будильник (openAlert) остаются в приложении. */
  if(!document.getElementById('alert').classList.contains('open')&&!document.getElementById('ralert').classList.contains('open')&&!document.getElementById('wiz').classList.contains('open')){
   const pr=await pendingRefill();
   if(pr&&!firedRefill[pr.iso+'|'+pr.day]){ firedRefill[pr.iso+'|'+pr.day]=true; openRefillAlert(pr) }
