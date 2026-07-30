@@ -69,7 +69,7 @@ test('defaultState — возвращает свежую копию (без об
   a.times.push('XX:XX');
   a.meds.fusid.qty = 'mutated';
   assert.notEqual(b.times.length, a.times.length, 'мутация times не утекает');
-  assert.equal(b.meds.fusid.qty, '1 таблетка', 'мутация meds не утекает');
+  assert.equal(b.meds.fusid.qty, '0.5 таблетки', 'мутация meds не утекает');
 });
 
 test('medImg — data:/IMG_SRC/null', () => {

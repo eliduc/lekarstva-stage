@@ -53,7 +53,7 @@ function defaultState(){return JSON.parse(JSON.stringify({
  /* Назначение Григория Разумовского, действует с 15 июня 2026 (по приложенным PDF) */
  meds:{
   esomeprazole:{name:"ESOMEPRAZOLE INOVAMED",ru:"ЭЗОМЕПРАЗОЛ ИНОВАМЕД",type:"tab",qty:"1 таблетка",sub:"Esomeprazole 40 мг · защита желудка",warn:"Внимание! Натощак, за 30–60 мин до завтрака — принять первым.",warnLevel:"red",warnBig:true,img:"esomeprazole"},
-  fusid:{name:"FUSID",ru:"ФУСИД",type:"tab",qty:"1 таблетка",sub:"Furosemide 40 мг · мочегонное",img:"fusid"},
+  fusid:{name:"FUSID",ru:"ФУСИД",type:"tab",qty:"0.5 таблетки",sub:"Furosemide 40 мг · мочегонное",img:"fusid"},
   forxiga:{name:"FORXIGA",ru:"ФОРКСИГА",type:"tab",qty:"1 таблетка",sub:"Dapagliflozin 10 мг · для сердца / сахар",img:"forxiga"},
   amiodacore:{name:"AMIODACORE",ru:"АМИОДАКОР",type:"tab",qty:"1 таблетка",sub:"Amiodarone 200 мг · от аритмии · = AMIOCARD / PROCOR",warn:"Принимать 5 дней в неделю — НЕ давать по ВТОРНИКАМ и ПЯТНИЦАМ",warnLevel:"amber",excludeDays:[2,5],img:"amiodacore"},
   eliquis:{name:"ELIQUIS",ru:"ЭЛИКВИС",type:"tab",qty:"1 таблетка",sub:"Apixaban 5 мг · разжижает кровь",warn:"АНТИКОАГУЛЯНТ · глотать целиком, не дробить, не пропускать",warnLevel:"red",img:"eliquis"},

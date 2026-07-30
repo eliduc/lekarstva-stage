@@ -8,7 +8,7 @@
    но старый код вызывает их через await — это совместимо. */
 const store = window.MedStore;
 const STAGE = !!(window.MedStore && window.MedStore.isStage); // stage-версия (отдельные данные, Telegram выключен)
-const APP_VERSION = '1.9 от 15.06.2026';
+const APP_VERSION = '2.0 от 30.07.2026';
 /* маленький футер с номером версии — показывается внизу на всех экранах */
 function verLine(){ return `<div class="note" style="text-align:center;opacity:.5;font-size:11px;margin-top:16px;letter-spacing:.02em">${t('ver_lbl')} ${APP_VERSION}</div>` }
 
@@ -35,7 +35,7 @@ async function openHistory(){
  if(!events.length){ html+=`<div class="card"><div class="note" style="text-align:center;font-size:15px">${MedSync.isOn(state)?t('hist_empty'):t('hist_offline')}</div></div>`; }
  else { let curDay='';
   for(const ev of events){ const d=new Date(ev.ts||0); const iso=dateISO(d);
-   if(iso!==curDay){ curDay=iso; html+=`<h2 style="font-size:16px;margin:16px 0 6px">${DF()[d.getDay()]} · ${iso.slice(8,10)}.${iso.slice(5,7)}.${iso.slice(0,4)}</h2>`; }
+   if(iso!==curDay){ curDay=iso; html+=`<h2 style="font-size:16px;margin:16px 0 6px">${DF()[weekdayIL(d)]} · ${iso.slice(8,10)}.${iso.slice(5,7)}.${iso.slice(0,4)}</h2>`; }
    const hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
    html+=`<div class="trow" style="padding:10px 13px;margin-top:8px">
     <span style="font-size:22px;flex:0 0 auto">${EV_ICON[ev.type]||'•'}</span>
@@ -169,13 +169,13 @@ function tgLines(time, day){ const all=sortMeds(medsAt(time)); const lines=[];
  }
  return lines.join('\n') }
 function tgClock(){ const n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0') }
-async function notifyGiven(time){ if(!tgConfigured())return; const day=new Date().getDay();
+async function notifyGiven(time){ if(!tgConfigured())return; const day=weekdayIL();
  const head='<b>'+t('tg_given_t')+'</b>';
  const who=tgEsc(state.caregiver||'');
  const when=tf('tg_when',{d:DF()[day],t:tgClock()});
  const body=head+'\n'+tf('tg_at',{t:time})+' · '+when+'\n👤 '+who+'\n\n'+t('tg_list')+'\n'+tgLines(time,day);
  await tgSend(body) }
-async function notifyMissed(time){ if(!tgConfigured())return; const day=new Date().getDay();
+async function notifyMissed(time){ if(!tgConfigured())return; const day=weekdayIL();
  const head='<b>'+t('tg_missed_t')+'</b>';
  const body=head+'\n'+tf('tg_at',{t:time})+' · '+DF()[day]+'\n\n'+t('tg_due')+'\n'+tgLines(time,day);/* КАО-fix: «Нужно было дать:», не «Выдано:» в сообщении о пропуске */
  await tgSend(body) }
@@ -198,7 +198,14 @@ let firedAlerts={}, snoozeUntil={}, alertTime=null, alertTimer=null, titleTimer=
 let firedRefill={}, currentRefill=null, rTimer=null, refillCtx=null;
 let firedMissed={}; let firedSummary=null;
 let doneCache={};
-function dateISO(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+/* Сутки считаем по Израилю, а не по часам устройства: расписание израильское,
+   и сервер уведомлений (notify.yml, TZ: Asia/Jerusalem) считает день так же.
+   Иначе устройство в поясе восточнее объявляет новый день раньше израильской
+   полуночи, и слияние статуса стирает отметки «выдано» за текущий день. */
+const _ilDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'});
+function dateISO(d){const p={};for(const x of _ilDate.formatToParts(d||new Date()))p[x.type]=x.value;return p.year+'-'+p.month+'-'+p.day}
+/* День недели (0=вс) той же израильской даты — чтобы день и дата не разошлись */
+function weekdayIL(d){return new Date(dateISO(d)+'T12:00:00Z').getUTCDay()}
 async function getDone(iso){ if(doneCache[iso])return doneCache[iso];
  const raw=await store.get('medapp:done:'+iso); let v=[]; try{v=raw?JSON.parse(raw):[]}catch(e){}
  doneCache[iso]=v; return v }
@@ -213,7 +220,7 @@ async function unmarkDone(iso,time){ const d=await getDone(iso); const i=d.index
  await setSlotMeta(iso,time); pushStatusSoon(iso); }
 async function undoGiven(tm){ if(!confirm(tf('undo_q',{t:tm})))return;
  await unmarkDone(dateISO(),tm); appendEvent('dose_undone',{time:tm});
- const day=new Date().getDay(); if(boxState&&boxState[day+'|'+tm]){ await boxTouch(day+'|'+tm,false) }
+ const day=weekdayIL(); if(boxState&&boxState[day+'|'+tm]){ await boxTouch(day+'|'+tm,false) }
  renderHome(true) }
 /* box cells: key "<weekday>|<time>" -> ISO date emptied; absent key = cell is filled */
 let boxState=null;
@@ -230,8 +237,8 @@ const BOXED=['tab','cap'];
 function boxMedsAt(tm){ return sortMeds(medsAt(tm)).filter(m=>BOXED.includes(m.type)) }
 function boxTimes(){ return (state?state.times:[]).filter(tm=>boxMedsAt(tm).length>0) }
 function boxEmptyTimes(day){ return boxTimes().filter(tm=>boxState&&boxState[day+'|'+tm]) }
-async function emptyCell(time){ if(!boxMedsAt(time).length)return; await loadBox(); const d=new Date(); await boxTouch(d.getDay()+'|'+time,true,dateISO(d)); pushStatusSoon(dateISO(d)) }
-async function syncGivenFromBox(){ const d=new Date(); const iso=dateISO(d); const day=d.getDay();
+async function emptyCell(time){ if(!boxMedsAt(time).length)return; await loadBox(); const d=new Date(); await boxTouch(weekdayIL(d)+'|'+time,true,dateISO(d)); pushStatusSoon(dateISO(d)) }
+async function syncGivenFromBox(){ const d=new Date(); const iso=dateISO(d); const day=weekdayIL(d);
  for(const tm of (state?state.times:[])){ if(boxState&&boxState[day+'|'+tm]===iso){ await markDone(iso,tm) } } }
 async function pendingRefill(){ await loadBox();
  let best=null;
@@ -307,7 +314,7 @@ function show(scr){ for(const s of ['home','collect','settings']){ document.getE
  if(scr==='home')renderHome(); if(scr==='collect')renderCollect(); if(scr==='settings'){setAuthed=false;renderSettings()} window.scrollTo(0,0) }
 function tick(){ const n=new Date();
  document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
- document.getElementById('hdate').textContent=DF()[n.getDay()]+', '+n.getDate()+'.'+String(n.getMonth()+1).padStart(2,'0') }
+ const iso=dateISO(n); document.getElementById('hdate').textContent=DF()[weekdayIL(n)]+', '+Number(iso.slice(8,10))+'.'+iso.slice(5,7) }
 
 /* ============ AUDIO ============ */
 function ensureAudio(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){} } if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume() }
@@ -337,7 +344,7 @@ function toggleSound(){ ensureAudio(); soundOn=!soundOn;
  store.set('medapp:sound',soundOn?'1':'0'); if(soundOn)chime() }
 
 /* ============ REMINDERS ============ */
-async function checkReminders(){ if(!state)return; const n=new Date(); const iso=dateISO(n); const day=n.getDay();
+async function checkReminders(){ if(!state)return; const n=new Date(); const iso=dateISO(n); const day=weekdayIL(n);
  const done=await freshDone(iso);
  const flowOpen=document.getElementById('wiz').classList.contains('open');
  for(const time of state.times){
@@ -395,7 +402,7 @@ function refillStart(){ const pr=currentRefill; closeRAlert(); if(pr)startRefill
 
 /* ============ HOME ============ */
 async function renderHome(force){ const el=document.getElementById('scr-home'); if(el.hidden&&force!==false&&force!==true)return; if(el.hidden&&force===false)return;
- const n=new Date(); const iso=dateISO(n); const day=n.getDay(); const done=await getDone(iso);
+ const n=new Date(); const iso=dateISO(n); const day=weekdayIL(n); const done=await getDone(iso);
  const hm=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
  let next=null; for(const tm of state.times){ if(!done.includes(tm)&&tm>=hm){next=tm;break} }
  let nextHtml;
@@ -439,7 +446,7 @@ function orderInfographic(){
 
 /* ============ COLLECT ============ */
 function renderCollect(){ const el=document.getElementById('scr-collect');
- const bts=boxTimes(); const today=new Date().getDay();
+ const bts=boxTimes(); const today=weekdayIL();
  let cells=`<span class="bxt"></span>`;
  for(const d of DAYORDER){ cells+=`<span class="bxh ${d===today?'tdy':''}">${DS()[d]}</span>` }
  for(const tm of bts){
@@ -564,10 +571,10 @@ function renderStep(){ const s=steps[stepIdx]; if(!s){closeWiz();return}
   nav.innerHTML=`<button class="done" onclick="closeWiz();show('home')">${t('to_home')}</button>`;
  }
  document.getElementById('wbody').scrollTop=0 }
-async function finishTime(tm){ if(!refillCtx&&wizDay===new Date().getDay()){ await markDone(dateISO(),tm); await emptyCell(tm); notifyGiven(tm) } stepIdx++;renderStep() }
+async function finishTime(tm){ if(!refillCtx&&wizDay===weekdayIL()){ await markDone(dateISO(),tm); await emptyCell(tm); notifyGiven(tm) } stepIdx++;renderStep() }
 
 /* ============ GIVE FLOW (staged administration) ============ */
-function startGive(time){ refillCtx=null; wizDay=new Date().getDay(); steps=[];
+function startGive(time){ refillCtx=null; wizDay=weekdayIL(); steps=[];
  const all=sortMeds(medsAt(time));
  const defs=[['tab','cap'],['syr','drop','sup'],['inh']];
  const groups=[]; for(const g of defs){ const meds=all.filter(m=>g.includes(m.type)); if(meds.length)groups.push({types:g,meds}) }
@@ -738,7 +745,7 @@ async function sendSummaryNow(){ const m=document.getElementById('sumNowMsg');
  if(m)m.textContent='…';
  const before=tgConfigured();
  // capture result by calling tgSend directly through a summary build
- const iso=dateISO(); const day=new Date().getDay();
+ const iso=dateISO(); const day=weekdayIL();
  const done=await getDone(iso); const gat=await getGivenAt(iso);
  const rows=[];
  for(const time of state.times){ rows.push(sumStatusLine(time, done, gat)); }
@@ -747,7 +754,7 @@ async function sendSummaryNow(){ const m=document.getElementById('sumNowMsg');
  const r=await tgSend(body);
  if(m)m.textContent=r.ok?t('summary_sent'):(t('tg_fail')+' ('+tgEsc(r.reason)+')') }
 async function setRefillTime(v){ if(/^\d{2}:\d{2}$/.test(v)){state.refillTime=v; await saveState()} }
-function testRefill(){ ensureAudio(); openRefillAlert({iso:dateISO(),day:new Date().getDay()}) }
+function testRefill(){ ensureAudio(); openRefillAlert({iso:dateISO(),day:weekdayIL()}) }
 async function addTime(){ const tm=prompt(t('new_time'),'14:00'); if(!tm||!/^\d{2}:\d{2}$/.test(tm))return;
  if(!state.times.includes(tm)){state.times.push(tm);state.schedule[tm]=state.schedule[tm]||[];appendEvent('time_added',{time:tm})} await saveState(); renderSettings() }
 async function changeTime(i,val){ if(!/^\d{2}:\d{2}$/.test(val))return; const old=state.times[i]; if(old===val)return;
@@ -767,7 +774,7 @@ function pickMedFor(tm){ const used=new Set(state.schedule[tm]||[]); let rows=''
   <button class="bigbtn gray" onclick="closeModal()">${t('close')}</button>`) }
 async function addToTime(tm,id){ (state.schedule[tm]=state.schedule[tm]||[]).push(id); appendEvent('sched_add',{time:tm,med:(state.meds[id]||{}).name||id}); await saveState(); closeModal(); renderSettings() }
 async function resetAll(){ if(!confirm(t('reset_q')))return; state=defaultState(); await saveState(); renderSettings() }
-function testAlert(){ ensureAudio(); openAlert(state.times[0]||'08:00',new Date().getDay()) }
+function testAlert(){ ensureAudio(); openAlert(state.times[0]||'08:00',weekdayIL()) }
 
 /* ============ MODAL ============ */
 function openModal(html){ document.getElementById('mbox').innerHTML=html; document.getElementById('modal').classList.add('open') }
