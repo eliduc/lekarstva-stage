@@ -182,6 +182,16 @@ window.MedSync = (function () {
     return { date: date, slots: slots, box: mergeByTs(a.box, b.box), ts: Math.max(a.ts || 0, b.ts || 0) };
   }
 
+  // Содержательное сравнение статуса — БЕЗ поля ts. ts берётся как Math.max и
+  // обновляется при каждом опросе (buildLocalStatus пишет Date.now()), поэтому
+  // сравнение вместе с ним всегда даёт «изменилось» и устройство переписывает
+  // live.json каждые ~20 с. За 5 суток так набежало >20 000 коммитов — это
+  // раздувает репозиторий и упирается в лимиты GitHub на запись.
+  function stableBody(s) {
+    s = s || {};
+    return stable({ date: s.date || '', slots: s.slots || {}, box: s.box || {} });
+  }
+
   // Двусторонняя синхронизация «живого» статуса в один заход (для опроса по таймеру):
   // читаем облако, сливаем с локальным; если у нас есть более свежее — дописываем (CAS).
   // -> { merged, pulledNew, error }
@@ -193,8 +203,8 @@ window.MedSync = (function () {
     return readCloud(c, statusPath()).then(function (res) {
       var cloud = res.data;
       var merged = mergeStatus(cloud, localStatus);
-      var pulledNew = stable(merged) !== stable(localStatus);   // облако дало новое
-      var changedCloud = stable(merged) !== stable(cloud || {}); // нам есть что дописать
+      var pulledNew = stableBody(merged) !== stableBody(localStatus);   // облако дало новое
+      var changedCloud = stableBody(merged) !== stableBody(cloud || {}); // нам есть что дописать
       if (!changedCloud) {
         store.setMeta('lastSyncError', null);
         return { merged: merged, pulledNew: pulledNew };

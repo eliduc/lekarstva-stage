@@ -1,7 +1,7 @@
 // КАО#1 — Флоу 3: отметка приёма «выдано» и отмена (undoGiven).
 // Проходим мастер выдачи 08:00 до конца → строка 08:00 = «ВЫДАНО».
 // Затем клик по строке → confirm() → undoGiven → строка снова «ОЖИДАНИЕ/ПРОПУЩЕНО».
-const { test, openFresh } = require('./helpers');
+const { test, openFresh, doseRow } = require('./helpers');
 const { expect } = require('@playwright/test');
 
 test.describe('Отметка приёма и отмена', () => {
@@ -20,7 +20,7 @@ test.describe('Отметка приёма и отмена', () => {
       return i;
     });
 
-    const row0 = page.locator('#scr-home .trow').nth(0);
+    const row0 = doseRow(page, '08:00');
     await expect(row0.locator('.tm')).toHaveText('08:00');
     // после сброса — не выдано
     await expect(row0.locator('.st')).not.toHaveClass(/done/);
@@ -46,7 +46,7 @@ test.describe('Отметка приёма и отмена', () => {
     await expect(page.locator('#wiz')).not.toHaveClass(/open/);
 
     // строка 08:00 теперь ВЫДАНО
-    const row0b = page.locator('#scr-home .trow').nth(0);
+    const row0b = doseRow(page, '08:00');
     await expect(row0b.locator('.st')).toHaveClass(/done/);
     await expect(row0b.locator('.st')).toContainText('ВЫДАНО');
 
@@ -55,7 +55,7 @@ test.describe('Отметка приёма и отмена', () => {
     await row0b.click();
 
     // после отмены строка 08:00 снова не «done»
-    const row0c = page.locator('#scr-home .trow').nth(0);
+    const row0c = doseRow(page, '08:00');
     await expect(row0c.locator('.st')).not.toHaveClass(/done/, { timeout: 7000 });
   });
 });

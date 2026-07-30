@@ -3,3 +3,8 @@
 *.token
 *token*.txt
 *secret*
+
+# Промежуточный вывод генератора печатных документов (HTML с вшитыми в base64
+# фото, готовые PDF и PNG-превью) — пересоздаётся командой tools/build_pdfs.py
+tools/_pdfbuild/
+tools/_pdfview/

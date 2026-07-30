@@ -62,6 +62,33 @@ test('mergeByTs — отсутствующий ts трактуется как 0'
   assert.equal(merge(a, b).k.v, 'A', 'запись без ts (=0) не перетирает ts=5');
 });
 
+/* ---------------- stableBody: сравнение статуса без ts ---------------- */
+
+test('stableBody — ts НЕ влияет на сравнение (иначе live.json пишется каждый опрос)', () => {
+  const c = loadCore();
+  const sb = c.MedSync._stableBody;
+  const a = { date: '2026-07-30', slots: { '08:00': { given: true, ts: 111 } }, box: {}, ts: 1000 };
+  const b = { date: '2026-07-30', slots: { '08:00': { given: true, ts: 111 } }, box: {}, ts: 999999 };
+  assert.equal(sb(a), sb(b), 'разный верхний ts при том же содержимом — записи быть не должно');
+});
+
+test('stableBody — реальное изменение содержимого различается', () => {
+  const c = loadCore();
+  const sb = c.MedSync._stableBody;
+  const base = { date: '2026-07-30', slots: {}, box: {}, ts: 1 };
+  assert.notEqual(sb(base), sb({ ...base, date: '2026-07-31' }), 'смена даты видна');
+  assert.notEqual(sb(base), sb({ ...base, slots: { '08:00': { given: true, ts: 5 } } }), 'новая отметка видна');
+  assert.notEqual(sb(base), sb({ ...base, box: { '3|08:00': { empty: true, ts: 5 } } }), 'ячейка таблетницы видна');
+});
+
+test('stableBody — ts ВНУТРИ слота учитывается (это признак более свежей отметки)', () => {
+  const c = loadCore();
+  const sb = c.MedSync._stableBody;
+  const a = { date: '2026-07-30', slots: { '08:00': { given: true, ts: 1 } }, box: {} };
+  const b = { date: '2026-07-30', slots: { '08:00': { given: true, ts: 2 } }, box: {} };
+  assert.notEqual(sb(a), sb(b));
+});
+
 /* ---------------- mergeStatus ---------------- */
 
 test('mergeStatus — один день: слоты объединяются по ts', () => {

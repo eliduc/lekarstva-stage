@@ -1,13 +1,13 @@
 // КАО#1 — Флоу 1: Главная.
 // Fresh-контекст → defaultState: 3 строки времени 08:00/14:00/20:00 + счётчики лекарств.
-const { test, openFresh } = require('./helpers');
+const { test, openFresh, doseRows } = require('./helpers');
 const { expect } = require('@playwright/test');
 
 test.describe('Главная', () => {
   test('3 строки 08:00/14:00/20:00 со счётчиками лекарств', async ({ page }) => {
     await openFresh(page);
 
-    const rows = page.locator('#scr-home .trow');
+    const rows = doseRows(page);
     await expect(rows).toHaveCount(3);
 
     // времена в порядке (state.times отсортирован)

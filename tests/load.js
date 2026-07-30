@@ -44,7 +44,7 @@ function loadCore() {
   var rawSync = readJs('sync.js');
   var syncSrc = rawSync.replace(
     /return\s*\{\s*\n\s*isOn:\s*isOn,/,
-    'return {\n    _mergeByTs: mergeByTs,\n    _cleanState: cleanState,\n    isOn: isOn,'
+    'return {\n    _mergeByTs: mergeByTs,\n    _cleanState: cleanState,\n    _stableBody: stableBody,\n    isOn: isOn,'
   );
   if (syncSrc === rawSync) {
     throw new Error(

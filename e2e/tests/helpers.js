@@ -29,4 +29,22 @@ async function openFresh(page, query = '') {
   await page.locator('#scr-home .trow').first().waitFor({ state: 'visible', timeout: 10000 });
 }
 
-module.exports = { test, openFresh };
+/**
+ * Строки приёмов на главной. ВАЖНО: класс .trow носит и баннер «пополнить
+ * таблетницу» (app.js:429), который renderHome вставляет ПЕРЕД строками времени,
+ * когда есть непополненные ячейки. Из-за него нумерация .trow съезжает, и
+ * .nth(0) перестаёт быть строкой 08:00. У баннера нет .tm — по нему и отличаем.
+ * @param {import('@playwright/test').Page} page
+ */
+function doseRows(page) { return page.locator('#scr-home .trow:has(.tm)'); }
+
+/**
+ * Строка конкретного времени приёма — не зависит от порядка и от баннера.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} time напр. '08:00'
+ */
+function doseRow(page, time) {
+  return doseRows(page).filter({ has: page.locator('.tm', { hasText: new RegExp('^' + time + '$') }) });
+}
+
+module.exports = { test, openFresh, doseRows, doseRow };
